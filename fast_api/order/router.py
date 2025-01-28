@@ -293,22 +293,6 @@ async def update_order(
     await service.delete_token(token)
     return {Messages.message: Messages.or_up_scs}
 
-@router.delete("/{order_id}",response_model=dict)
-async def delete_order_by_id(order_id:str,
-                             current_user:DBUser=Depends(get_current_user)):
-    # Check user's role for access control.
-    query ={
-        "role_name":current_user.role,
-        "company_name":current_user.company
-    }
-    await user_has_permission(query=query,required_permission="delete_main_order")
-    query =None
-    order_data = await service.get_order_by_id(order_id=order_id)
-    if order_data["status"]=="divided_order":
-        for order in order_data["sub_orders"]:
-            await service.delete_order_by_order_id({"_id":ObjectId(order["id"])})
-    await service.delete_order_by_order_id(query={"_id":ObjectId(order_id)})
-    return {"success":f"successfully deleted order by id {order_id}"}
 
 # Handler to create an invoice for an order.
 @router.put(
@@ -337,7 +321,6 @@ async def manager_register(
         }
         await user_has_permission(query=query,
                                   required_permission="create_invoice")
-        query=None
         # check_role_access(
         #     current_user.role, [Roles.director, Roles.admin, Roles.manager]
         # )

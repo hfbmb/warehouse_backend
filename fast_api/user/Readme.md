@@ -1,323 +1,169 @@
-# User Module Documentation
+# User Management API
+
+This FastAPI-based API provides various user-related endpoints for registration, login, and management. Below is a description of each function in the code.
+
+## Table of Contents
+
+- [Features](#features)
+- [Endpoints](#endpoints)
+- [Dependencies](#dependencies)
+- [Exception Handling](#exception-handling)
+- [Pagination](#pagination)
+- [How to Use](#how-to-use)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+- User registration with hashed password storage.
+- User login with access token generation.
+- User logout with access token removal.
+- User password change functionality.
+- User profile retrieval.
+- Access token refresh using a refresh token.
+- User data update (e.g., profile information).
+- Role-based access control.
+- Pagination for listing users.
+
+## Endpoints
+
+
+### Endpoint: Get All Users
+- URL: `/users/`
+- Method: GET
+- Parameters: None
+- Description: Retrieves a paginated list of all users.
+- Access Control: Requires the user to have the role of 'director' or 'admin'.
+
+### Endpoint: Get User by ID
+- URL: `/users/{user_id}`
+- Method: GET
+- Parameters:
+  - `user_id` (Path Parameter): The ID of the user to retrieve.
+- Description: Gets the user's data by their ID.
+- Access Control: Requires the user to have the role of 'director', 'admin', or 'manager'.
+
+### Endpoint: Get Current User's Information
+- URL: `/users/user/info`
+- Method: GET
+- Parameters: None
+- Description: Retrieves the information of the currently authenticated user.
+- Access Control: Requires the user to be authenticated.
+
+### Endpoint: Register a New User
+- URL: `/users/`
+- Method: POST
+- Parameters: JSON data for user registration.
+- Description: Registers a new user and sends a verification code via email.
+- Access Control: Requires the user to have the role of 'director', 'admin', or 'manager'.
+
+### Endpoint: Confirm User Registration with Verification Code
+- URL: `/users/{verification_code}`
+- Method: PUT
+- Parameters:
+  - `verification_code` (Path Parameter): The verification code received via email.
+  - `email` (Query Parameter): The email address of the user.
+- Description: Confirms user registration using a verification code.
+- Access Control: Public, but requires a valid verification code and email address.
+
+### Endpoint: User Login
+- URL: `/users/login`
+- Method: POST
+- Example in curl: 
+    curl -X 'POST' \
+    'http://warehouse-app-test.prometeochain.io/users/login' \
+    -H 'accept: application/json' \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    -d 'grant_type=&username=manager%40mail.ru&password=manager&scope=&client_id=&client_secret='
+- Parameters: 
+    User's login credentials (username(email) and password).
+- content-Type: application/x-www-form-urlencoded
+- Description: Allows a user to log in, providing an access token and a refresh token.
+- Access Control: Public, but the user must have a confirmed verification code.
+
+### Endpoint: User Logout
+- URL: `/users/logout`
+- Method: POST
+- Parameters: None
+- Description: Logs out the user by removing the access token cookie.
+- Access Control: Requires the user to be authenticated.
+
+### Endpoint: Refresh Access Token
+- URL: `/users/take/access_token/{refresh_token}`
+- Method: POST
+- Parameters:
+  - `refresh_token` (Path Parameter): The refresh token to generate a new access token.
+- Description: Refreshes the access token using a valid refresh token.
+- Access Control: Public, but requires a valid refresh token.
+
+### Endpoint: Delete User by ID
+- URL: `/users/{user_id}`
+- Method: DELETE
+- Parameters:
+  - `user_id` (Path Parameter): The ID of the user to delete.
+- Description: Deletes a user by their ID.
+- Access Control: Requires the user to have the role of 'director', 'admin', or 'manager', and managers cannot delete other managers.
 
-## File Structure
+### Endpoint: Change User's Password
+- URL: `/users/password/change`
+- Method: POST
+- Parameters: User's current and new passwords.
+- Description: Allows a user to change their password securely.
+- Access Control: Requires valid user credentials and access control.
 
-```
-user/
-├── config.py
-├── constants.py
-├── exception.py
-├── __init__.py
-├── models.py
-├── permission_router.py
-├── Readme.md
-├── roles_router.py
-├── router.py
-├── service.py
-└── utils.py
-```
+### Endpoint: Forgot Password (Placeholder)
+- URL: `/users/password/forgot`
+- Method: PUT
+- Parameters: User's email address.
+- Description: Sends a verification code via email to allow password reset.
+- Access Control: Public.
 
-### File Explanations
+### Endpoint: Change Password with Verification Code
+- URL: `/users/verification/code`
+- Method: PUT
+- Parameters: User's email, verification code, and new password.
+- Description: Allows a user to change their password using a verification code.
+- Access Control: Public, but requires a valid verification code.
 
-- `config.py`: Contains configuration settings specific to the user module, such as constants and environment variables.
-  
-- `constants.py`: Defines constant values that are used throughout the user module, such as role names and permission levels.
 
-- `exception.py`: Custom exception classes that handle specific errors related to user operations.
+### Endpoint: Change Password with Verification Code
+- URL: `/users/verification/code`
+- Method: PUT
+- Parameters: JSON data including email, verification code, and a new password.
+- Description: Allows a user to change their password using a verification code received via email. The provided email and verification code must be valid for security reasons. If the email and verification code match, the user's password is updated with the new password provided in the request. The user's 'is_confirmed' status is set to 'True' to indicate successful verification.
+- Access Control: Public, but requires a valid email and verification code for security.
 
-- `__init__.py`: Initialization file for the user module, making it a Python package.
+### Endpoint: Update User Data by ID
+- URL: `/users/{user_id}`
+- Method: PUT
+- Parameters:
+  - `user_id` (Path Parameter): The ID of the user to update.
+  - `user_data` (JSON Body): User data to update.
+- Description: Allows an authorized user (with roles 'director', 'admin', or 'manager') to update user data. The 'user_data' parameter contains the updated user information. This function is useful for making changes to user profiles or other details.
+- Access Control: Requires the user to have the role of 'director', 'admin', or 'manager'.
 
-- `models.py`: Defines the data models related to users, such as the User schema for the database.
 
-- `permission_router.py`: Contains API endpoints related to user permissions, like assigning and revoking permissions.
+## Dependencies
 
-- `roles_router.py`: Contains API endpoints related to user roles, like creating and deleting roles.
+This API uses various dependencies for user authentication, exception handling, and pagination. These dependencies are managed internally within the codebase.
 
-- `router.py`: The main router that includes all the API endpoints related to user operations like registration, login, and profile management.
+## Exception Handling
 
-- `service.py`: Service layer containing the business logic for user operations, called by the API endpoints in `router.py`.
+The API handles exceptions related to unauthorized access, permission issues, non-existent data, and invalid IDs. It provides appropriate error responses for each scenario.
 
-- `utils.py`: Utility functions that are used across the user module, such as password hashing and token generation.
+## Pagination
 
-## User Module API Endpoints
+The API supports pagination for listing users. It uses the `fastapi-pagination` library to provide paginated responses.
 
-(Include the API documentation here, explaining each endpoint, the HTTP methods, parameters, and what each endpoint does.)
+## How to Use
 
-# API Endpoints router.py 
 
-Certainly, let's document the API endpoints in the `user` module based on the `router.py` file. This documentation will provide an overview of each API endpoint, its purpose, parameters, and code explanations.
+To utilize this API, you can make HTTP requests to the specified endpoints based on your user role and permissions. Detailed information on request and response formats can be found in the codebase.
 
-### Get All Users
+## Contributing
 
-- **Endpoint**: `/users/`
-- **Method**: `GET`
-- **Response Model**: `Page[UserWithID]`
-- **Description**: Retrieves a paginated list of all users based on the role of the current user.
-- **Parameters**: 
-  - `user` (DBUser): The current authenticated user.
+If you would like to contribute to the development of this API, please follow the guidelines outlined in the CONTRIBUTING.md file in the repository.
 
-#### Code Explanation
-- `user_has_permission`: Checks if the user has the permission `view_all_users`.
-- `service.get_all_users_by_company`: Fetches all users belonging to the same company as the current user.
+## License
 
-### Get User by ID
-
-- **Endpoint**: `/users/{user_id}`
-- **Method**: `GET`
-- **Response Model**: `dict`
-- **Description**: Retrieves a specific user by their ID.
-- **Parameters**: 
-  - `user_id` (str): The ID of the user.
-  - `current_user` (DBUser): The current authenticated user.
-
-#### Code Explanation
-- `user_has_permission`: Checks if the user has the permission `view_user_by_id`.
-- `service.get_user_by`: Fetches the user by their ID.
-
-### Register User
-
-- **Endpoint**: `/users/`
-- **Method**: `POST`
-- **Response Model**: `Success`
-- **Description**: Registers a new user.
-- **Parameters**: 
-  - `request` (WebUser): The data for the new user.
-  - `current_user` (DBUser): The current authenticated user.
-
-#### Code Explanation
-- `user_has_permission`: Checks if the user has the permission `register_user`.
-- `service.register_user_`: Registers the new user in the database.
-- `send_email_to_client`: Sends a verification email to the new user.
-
-### Confirm Verification Code
-
-- **Endpoint**: `/users/{verification_code}`
-- **Method**: `PUT`
-- **Response Model**: `dict`
-- **Description**: Confirms the verification code sent to the user's email.
-- **Parameters**: 
-  - `verification_code` (str): The verification code.
-  - `email` (str): The email of the user.
-
-#### Code Explanation
-- `service.custom_get_user_info_get`: Fetches the user by their email and verification code.
-- `service.update_user`: Updates the user's `is_confirmed` status.
-
-### Login
-
-- **Endpoint**: `/users/login`
-- **Method**: `POST`
-- **Response Model**: `dict`
-- **Description**: Logs in a user.
-- **Parameters**: 
-  - `form_data` (OAuth2PasswordRequestForm): The login form data.
-
-#### Code Explanation
-- `service.get_user_by`: Fetches the user by their email.
-- `utils.verify_password_exception`: Verifies the user's password.
-- `utils.create_access_token`: Creates an access token for the user.
-
-### Logout
-
-- **Endpoint**: `/users/logout`
-- **Method**: `POST`
-- **Response Model**: `Success`
-- **Description**: Logs out a user.
-- **Parameters**: None
-
-#### Code Explanation
-- Deletes the `access_token` cookie.
-
-### Delete User
-
-- **Endpoint**: `/users/{user_id}`
-- **Method**: `DELETE`
-- **Response Model**: `Success`
-- **Description**: Deletes a user by their ID.
-- **Parameters**: 
-  - `user_id` (str): The ID of the user.
-  - `user` (DBUser): The current authenticated user.
-
-#### Code Explanation
-- `user_has_permission`: Checks if the user has the permission `delete_user`.
-- `service.remove_user`: Deletes the user by their ID.
-
-### Change Password
-
-- **Endpoint**: `/users/password/change`
-- **Method**: `POST`
-- **Response Model**: `Success`
-- **Description**: Changes the password of a user.
-- **Parameters**: 
-  - `user` (UserChangePassword): The data for changing the password.
-  - `current_user` (DBUser): The current authenticated user.
-
-#### Code Explanation
-- `check_access_n_credentials`: Checks the user's credentials.
-- `service.change_password_`: Changes the user's password in the database.
-
----
-
-# API Endpoints role_router.py 
-
-
-## Overview
-
-The Role file is responsible for managing roles within the application. It provides API endpoints for creating, updating, deleting, and fetching roles.
-
-## API Endpoints
-
-### Create a New Role
-
-- **Endpoint**: `/role/`
-- **Method**: `POST`
-- **Response Model**: `dict`
-- **Description**: Creates a new role in the system.
-- **Parameters**:
-  - `data`: The data for the role in `Role` model format.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `create_role_for_users`: Service function that handles the logic for creating a new role in the database.
-
-### Get All Roles
-
-- **Endpoint**: `/role/`
-- **Method**: `GET`
-- **Response Model**: `Page[dict]`
-- **Description**: Retrieves all roles based on the role of the current user.
-- **Parameters**:
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `get_all_roles_in_company`: Service function that fetches all roles in a specific company.
-
-### Get a Specific Role by ID
-
-- **Endpoint**: `/role/{role_id}`
-- **Method**: `GET`
-- **Response Model**: `dict`
-- **Description**: Retrieves a specific role by its ID.
-- **Parameters**:
-  - `role_id`: The ID of the role to retrieve.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `get_role_by_id`: Service function that fetches the role by its ID.
-
-### Update a Role by ID
-
-- **Endpoint**: `/role/{role_id}`
-- **Method**: `PUT`
-- **Response Model**: `dict`
-- **Description**: Updates a specific role by its ID.
-- **Parameters**:
-  - `role_id`: The ID of the role to update.
-  - `data`: The updated data for the role in `UpdateRole` model format.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `update_role_by_data`: Service function that updates the role data.
-
-### Delete a Role by ID
-
-- **Endpoint**: `/role/{role_id}`
-- **Method**: `DELETE`
-- **Response Model**: `dict`
-- **Description**: Deletes a specific role by its ID.
-- **Parameters**:
-  - `role_id`: The ID of the role to delete.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `delete_role_by_id`: Service function that deletes the role by its ID.
-
----
-
-Certainly, let's document the `permission` module in a `README.md` format to help developers understand its functionality and API endpoints.
-
----
-
-# Api Endpoints permission_router.py
-
-## Overview
-
-The Permission file is responsible for managing permissions within the application. It provides API endpoints for creating, updating, deleting, and fetching permissions.
-
-### Create a New Permission
-
-- **Endpoint**: `/permission/`
-- **Method**: `POST`
-- **Response Model**: `dict`
-- **Description**: Creates a new permission in the system.
-- **Parameters**:
-  - `data`: The data for the new permission in `Permission` model format.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `create_permission`: Service function that handles the logic for creating a new permission in the database.
-
-### Get All Permissions
-
-- **Endpoint**: `/permission/`
-- **Method**: `GET`
-- **Response Model**: `Page[dict]`
-- **Description**: Retrieves all permissions.
-- **Parameters**:
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `get_all_permission_data`: Service function that fetches all permissions.
-
-### Get a Specific Permission by ID
-
-- **Endpoint**: `/permission/{permission_id}`
-- **Method**: `GET`
-- **Response Model**: `dict`
-- **Description**: Retrieves a specific permission by its ID.
-- **Parameters**:
-  - `permission_id`: The ID of the permission to retrieve.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `get_permission_by_id`: Service function that fetches the permission by its ID.
-
-### Update a Permission by ID
-
-- **Endpoint**: `/permission/{permission_id}`
-- **Method**: `PUT`
-- **Response Model**: `dict`
-- **Description**: Updates a specific permission by its ID.
-- **Parameters**:
-  - `permission_id`: The ID of the permission to update.
-  - `data`: The updated data for the permission in `UpdatePermission` model format.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `update_permission_by_id`: Service function that updates the permission data.
-
-### Delete a Permission by ID
-
-- **Endpoint**: `/permission/{permission_id}`
-- **Method**: `DELETE`
-- **Response Model**: `dict`
-- **Description**: Deletes a specific permission by its ID.
-- **Parameters**:
-  - `permission_id`: The ID of the permission to delete.
-  - `current_user`: The current user making the request, determined by the `get_current_user` dependency.
-
-#### Code Explanation
-
-- `delete_permission_by_id`: Service function that deletes the permission by its ID.
-
----
-
+This project is licensed under the MIT License. See the LICENSE.md file for details.

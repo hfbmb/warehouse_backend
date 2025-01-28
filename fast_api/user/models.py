@@ -249,8 +249,6 @@ class Role(BaseModel):
                     {"permission_name":"delete_permission"},
                     ###Order permissions
                     {"permission_name": "view_order_team"},
-                    {"permission_name":"create_sub_order"},
-                    {"permission_name":"delete_main_order"},
                     # {"permission_name": "start_work_on_order"},
                     {"permission_name": "view_all_orders"},
                     # {"permission_name": "view_order_details"},

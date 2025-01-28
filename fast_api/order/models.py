@@ -1,6 +1,6 @@
 # Installed packages
-from pydantic import BaseModel, Field,EmailStr,validator
-from datetime import datetime,date
+from pydantic import BaseModel, Field,EmailStr
+from datetime import datetime
 from typing import List
 
 # Local packages
@@ -126,8 +126,8 @@ class OrderWithId(Order):
                         "width": 1,
                         "length": 1,
                         "packing_type": "pallets",
-                        "dimension_type": "cm",
-                        "weight_type": "kg",
+                        "dimension_type": "container",
+                        "weight_type": "container",
                     }
                 ],
                 "documents": ["contract.pdf", "invoice.pdf"],
@@ -151,10 +151,9 @@ class SalesmanSideOrder(BaseModel):
                 "document_number": "1234er1",
                 "document_type": "Nakladnoy",
                 "description":"order added",
-                # "warehouse_name":"warehouse1"
+                "warehouse_name":"warehouse1"
                 }
         }
-
 class SalesmanBox(BaseModel):
     box_id:str =Field(...,description="box id in warehouse")
     box_type_id:str =Field(...,description="box type id")
@@ -202,94 +201,3 @@ class CellWithId(BaseModel):
 
 class RentCellByClient(CellWithId):
     cells_with_id:Optional[list[CellWithId]] = Field(default=None)
-
-
-
-###This class for create sub order
-class Suborder(BaseModel):
-    warehouse_name: str = Field(..., description="warehouse name",max_length=50)
-    products: list[ClientSideProduct] = Field(..., description="list of product data")
-    date_to_arrival: int = Field(..., description="date to arrival order")
-    time_to_arrival: int = Field(..., description="time to arrival order")
-    status:str =Field(default="created",description="status of sub_order")
-
-    @validator("date_to_arrival", pre=True, always=True)
-    def validate_date(cls, value):
-        arrival_date = datetime.fromtimestamp(value).date()
-        current_date = date.today()
-        if arrival_date < current_date:
-            raise ValueError("The date must be a future date")
-        return value
-
-    @validator("time_to_arrival", pre=True, always=True)
-    def validate_time(cls, value, values):
-        arrival_time = datetime.fromtimestamp(value).time()
-        current_time = datetime.now().time()
-        arrival_date = values.get('date_to_arrival')
-        if arrival_date:
-            arrival_date = datetime.fromtimestamp(arrival_date).date()
-            current_date = date.today()
-            if arrival_date < current_date and arrival_time <= current_time:
-                raise ValueError("The time must be a future time for today's date")
-        return value
-    
-    class Config:
-        json_schema_extra={
-            "example":{
-                "warehouse_name":"warehouse1",
-                "products":[
-                    {
-                        "product_name":"apple",
-                        "quantity":10,
-                        "expiration_date":10,
-                    }
-                ],
-                # "date_to_storage":10,
-                "date_to_arrival":1701129600,
-                "time_to_arrival":1701129600,
-                "status":"created"
-            }
-        }
-
-
-class SubOrders(BaseModel):
-    order_id:str =Field(...,description="main order id",min_length=2)
-    sub_orders : list[Suborder]=Field(...,description="list of suborder")
-
-    class Config:
-        json_schema_extra ={
-            "example":{
-                "order_id":"12323weqwe",
-                "sub_orders":[
-                    {
-                        "warehouse_name":"warehouse1",
-                        "products":[
-                            {
-                                "product_name":"apple",
-                                "quantity":10,
-                                "expiration_date":10,
-                            }
-                        ],
-                        # "date_to_storage":10,
-                        "date_to_arrival":1701129600,
-                        "time_to_arrival":1701129600,
-                        "status":"created"
-                    },
-                    {
-                        "warehouse_name":"warehouse2",
-                        "products":[
-                            {
-                                "product_name":"apple",
-                                "quantity":10,
-                                "expiration_date":10,
-        
-                            }
-                        ],
-                        # "date_to_storage":10,
-                        "date_to_arrival":1701129600,
-                        "time_to_arrival":1701129600,
-                        "status":"created"
-                    }
-                ]
-            }
-        }

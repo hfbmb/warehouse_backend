@@ -1,133 +1,105 @@
-# Company API Documentation
-
-## Overview
-
-This API focuses on company-related operations, such as managing company details, employees, and other related functionalities. It's built using FastAPI and integrates with MongoDB for data storage.
-
-## Directory Structure
-
-- `constants.py`: Contains constant variables and enums used throughout the company module.
-- `exception.py`: Defines custom exceptions specific to company operations.
-- `models.py`: Contains the data models related to companies.
-- `router.py`: Defines the API endpoints related to companies.
-- `service.py`: Contains the core business logic for company operations.
-- `test_company_service.py`: Unit tests for the service layer.
-- `README.md`: This documentation file.
-- `__init__.py`: Initialization file for the company module.
-- `__pycache__`: Compiled Python files (automatically generated).
+# Company Operations
 
 
+## Retrieve Current User's Company
+    Endpoint: /api/company/
+    Method: GET
+    Description: Retrieve the current user's company data.
+    Authentication: Required
+    Role Required: Director, Admin
+    Response Format: JSON
 
-# Company API Documentation
+## Create Company
+    Endpoint: /api/company/
+    Method: POST
+    Description: Create a new company and register a founder.
+    Authentication: Required
+    Role Required: Director
+    Request Format: JSON
+    Response Format: JSON
 
-## Table of Contents
+## Update Company Data
+    Endpoint: /api/company/
+    Method: PUT
+    Description: Update company data.
+    Authentication: Required
+    Role Required: Director, Admin
+    Request Format: JSON
+    Response Format: JSON
 
-1. [Overview](#overview)
-2. [Dependencies](#dependencies)
-3. [API Endpoints](#api-endpoints)
-    - [Get Current Company](#get-current-company)
-    - [Create Company](#create-company)
-    - [Update Company Data](#update-company-data)
-    - [Delete Company](#delete-company)
-4. [Pagination](#pagination)
+## Delete Company
+    Endpoint: /api/company/
+    Method: DELETE
+    Description: Delete the current user's company and associated data.
+    Authentication: Required
+    Role Required: Director
+    Response Format: JSON
 
-## Overview
+# Warehouse Operations
 
-The `company` module focuses on operations related to managing companies. It provides API endpoints for creating, updating, deleting, and fetching company information. The module is built using FastAPI and integrates with various services and models.
 
-## Dependencies
+## Retrieve Current User's Warehouse
+    Endpoint: /api/warehouse/{warehouse_name}
+    Method: GET
+    Description: Retrieve the current user's warehouse data by name.
+    Authentication: Required
+    Role Required: Director, Manager, Admin
+    Response Format: JSON
 
-- FastAPI: For creating the API.
-- FastAPI Pagination: For paginating lists of items.
-- Logging: For logging errors and other information.
+## Retrieve Warehouse Users
+    Endpoint: /api/warehouse/users/
+    Method: GET
+    Description: Retrieve users associated with the current user's warehouse.
+    Authentication: Required
+    Role Required: Director, Admin, Manager
+    Response Format: JSON (Paginated)
 
-## API Endpoints
+## Add Warehouse
+    Endpoint: /api/warehouse/
+    Method: POST
+    Description: Add a new warehouse to the company.
+    Authentication: Required
+    Role Required: Director, Admin
+    Request Format: JSON
+    Response Format: JSON
 
-### Get Current Company
+## Create Warehouse Category
+    Endpoint: /api/warehouse/create/category/{warehouse_name}
+    Method: POST
+    Description: Create a new category for a specific warehouse.
+    Authentication: Required
+    Role Required: Manager, Director, Admin
+    Request Format: JSON
+    Response Format: JSON
 
-#### Endpoint Details
+## Update Warehouse Data
+    Endpoint: /api/warehouse/{warehouse_name}
+    Method: PUT
+    Description: Update warehouse data by name.
+    Authentication: Required
+    Role Required: Manager, Director, Admin
+    Request Format: JSON
+    Response Format: JSON
 
-- **URL**: `/`
-- **HTTP Method**: `GET`
-- **Response Model**: `ReturnCompany`
-- **Parameters**: None
-- **Dependencies**: `get_current_user`
-- **Exceptions**: `UnauthorizedException`, `PermissionException`
+## Delete Warehouse
+    Endpoint: /api/warehouse/{warehouse_name}
+    Method: DELETE
+    Description: Delete a warehouse by name and its associated data.
+    Authentication: Required
+    Role Required: Director, Admin
+    Response Format: JSON
 
-#### Code Explanation
-
-- **`user_has_permission`**: This function checks if the current user has the permission to view their own company. It queries the database to verify the user's role and company.
-  
-- **`service.get_company`**: This function fetches the current user's company data from the database and returns it.
-
-### Create Company
-
-#### Endpoint Details
-
-- **URL**: `/`
-- **HTTP Method**: `POST`
-- **Response Model**: `Success`
-- **Parameters**: 
-  - `founder`: An object of type `WebFounder` containing the founder's details.
-  - `company`: An object of type `Company` containing the company details.
-- **Exceptions**: `DuplicateKeyException`
-
-#### Code Explanation
-
-- **`check_founder_exists`**: This function checks if a founder with the given email already exists in the database. If so, it raises an exception.
-
-- **`service.check_company_exists`**: This function checks if a company with the given name already exists in the database. If so, it raises an exception.
-
-- **`register_founder`**: This function registers the founder in the database. It hashes the password and sets the role to `director`.
-
-- **`service.create_company_`**: This function creates the company in the database. It sets the company status to `active`.
-
-### Update Company Data
-
-#### Endpoint Details
-
-- **URL**: `/`
-- **HTTP Method**: `PUT`
-- **Response Model**: `Success`
-- **Parameters**: 
-  - `data`: An object of type `UpdateCompany` containing the updated company details.
-- **Dependencies**: `get_current_user`
-- **Exceptions**: `UnauthorizedException`, `PermissionException`
-
-#### Code Explanation
-
-- **`user_has_permission`**: This function checks if the current user has the permission to update the company data. It queries the database to verify the user's role and company.
-
-- **`service.update_data`**: This function updates the company data in the database. It filters out null or empty values before updating.
-
-### Delete Company
-
-#### Endpoint Details
-
-- **URL**: `/`
-- **HTTP Method**: `DELETE`
-- **Response Model**: None
-- **Parameters**: None
-- **Dependencies**: `get_current_user`
-
-#### Code Explanation
-
-- **`user_has_permission`**: This function checks if the current user has the permission to delete the company. It queries the database to verify the user's role and company.
-
-- **`service.delete_company`**: This function deletes the company from the database.
-
-- **`remove_all_user_in_company`**: This function removes all users associated with the company from the database.
-
-- **`remove_all_orders_in_company`**: This function removes all orders associated with the company from the database.
-
-- **`remove_all_products_in_company`**: This function removes all products associated with the company from the database.
+## Delete Warehouse Gate
+    Endpoint: /api/warehouse/gates/{gate_name}
+    Method: DELETE
+    Description: Delete a gate by gate name.
+    Authentication: Required
+    Role Required: Director, Manager, Admin
+    Response Format: JSON
 
 ## Pagination
+    @Pagination is supported for endpoints that return lists of items. The page and items_per_page parameters can be used to navigate through the results.
+    Authentication and Roles
 
-The API uses FastAPI Pagination for paginating lists of items. The `add_pagination` function is added to the router to enable this feature.
-
-
-## Additional Notes
-
-- The `service.py` file contains the core logic for CRUD operations related to companies. It interacts with the database and performs validations.
-- The `router.py` file defines the API endpoints and handles HTTP requests and responses.
+## Authentication is required for most endpoints.
+    Role-based access control is implemented to restrict access to certain operations based on user roles (e.g., Director, Manager, Admin).

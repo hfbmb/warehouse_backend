@@ -42,7 +42,7 @@ class Gate(BaseModel):
         }
 
 class UpdateWarehouse(BaseModel):
-    warehouse_name: str = Field(None, description="warehouse name")
+    # warehouse_name: str = Field(None, description="warehouse name")
     street: str = Field(None, description="Street of company location")
     city: str = Field(None, description="City of company location")
     region: str = Field(None, description="Region of company location")
@@ -52,7 +52,7 @@ class UpdateWarehouse(BaseModel):
     class Config:
         json_schema_extra ={
             "example":{
-                "warehouse_name": "Updated Warehouse",
+                # "warehouse_name": "Updated Warehouse",
                 "street": "456 Elm Street",
                 "city": "New City",
                 "region": "New Region",

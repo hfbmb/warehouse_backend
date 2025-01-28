@@ -97,9 +97,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/",response_model=dict)
-async def root():
-    return {"success":"hello world"}
 
 @app.on_event("startup")
 async def startup_event():

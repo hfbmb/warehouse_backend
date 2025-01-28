@@ -55,7 +55,7 @@ async def check_warehouse_data_by_id(id:str):
     
 async def update_warehouse_data(query:dict,warehouse_data:dict):
     updated_data = await warehouses_collection.update_one(query,{"$set":warehouse_data})
-    if updated_data.matched_count >1:
+    if updated_data.matched_count >0:
         pass
     else:
         raise WarehouseNotFound
@@ -456,7 +456,7 @@ async def get_box_data_by_id(id:str):
 
 async def get_all_boxes_data(query:dict):
     boxes =[]
-    result = boxes_collection.find(query).sort({"volume":1})
+    result = boxes_collection.find(query).sort([("volume", 1)])
     async for box in result:
         box["id"]= str(box.pop("_id"))
         boxes.append(box)
@@ -495,7 +495,7 @@ async def get_box_type_data_by_id(id:str)->dict:
 async def get_all_box_type_data(query:dict)->list:
     try:
         boxes =[]
-        result = types_collection.find(query).sort({"volume":1})
+        result = types_collection.find(query)
         async for box in result:
             box["id"]=str(box.pop("_id"))
             boxes.append(box)

@@ -20,11 +20,6 @@ from .models import Order
 from ..product.constants import Products, Messages as ProdMessages
 from ..user.constants import Users, Roles
 
-
-# ###Function to create all sub_orders 
-# async def create_sub_orders(main_order_id:str,orders:list):
-#     res = orders_collection.insert_many(orders)
-
 # Function to return all orders based on user role and access rights.
 async def return_all_orders(user_id: str, role: str, company: str, warehouse: str):
     query = {}
@@ -246,22 +241,3 @@ async def check_order_product_status(products:list,status:str)->str:
         if product["status"]!=status:
             raise DoesntMatchStatus
     return "ok"
-
-
-async def get_all_sub_orders(query:dict)->list:
-    orders = orders_collection.find(query)
-    if orders is None:
-        raise OrderNotFoundById
-    sub_orders =[]
-    async for order in orders:
-        order["id"]=str(order.pop("_id"))
-        sub_orders.append(order)
-    return sub_orders
-    
-
-async def delete_order_by_order_id(query:dict):
-    res = await orders_collection.delete_one(query)
-    if res.deleted_count>0:
-        pass
-    else:
-        raise OrderNotFoundById

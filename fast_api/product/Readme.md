@@ -1,165 +1,80 @@
-# Product API Documentation
+# Product Management API
 
-## Table of Contents
+This API provides endpoints for managing products within your application. It allows users with different roles to access and manipulate product data.
 
-1. [Overview](#overview)
-2. [Directory Structure](#directory-structure)
-3. [Dependencies](#dependencies)
-4. [API Endpoints](#api-endpoints)
-    - [Get Product by Client Email](#get-product-by-client-email)
-    - [Generate QR Codes](#generate-qr-codes)
-    - [Get All Products](#get-all-products)
-    - [Get Products by Order ID](#get-products-by-order-id)
-    - [Get Product by Product ID](#get-product-by-product-id)
-    - [Relocate Product](#relocate-product)
-    - [Get Product by Product Name](#get-product-by-product-name)
-5. [Pagination](#pagination)
-
-## Overview
-
-The `product` module focuses on operations related to managing products. It provides API endpoints for creating, updating, deleting, and fetching product information. The module is built using FastAPI and integrates with various services and models.
-
-## Directory Structure
-
-```
-product/
-├── constants.py
-├── exceptions.py
-├── __init__.py
-├── models.py
-├── __pycache__
-├── Readme.md
-├── router.py
-└── service.py
-```
-
-- `constants.py`: Contains all the constant values used in the product module.
-- `exceptions.py`: Defines custom exceptions for the product module.
-- `models.py`: Contains the data models related to products.
-- `router.py`: Defines all the API endpoints related to products.
-- `service.py`: Contains the business logic for handling product-related operations.
-
-
-## Overview
-
-The `product` module focuses on operations related to managing products. It provides API endpoints for creating, updating, deleting, and fetching product information. The module is built using FastAPI and integrates with various services and models.
-
-## Dependencies
-
-- FastAPI: For creating the API.
-- FastAPI Pagination: For paginating lists of items.
-
-## API Endpoints
+## Endpoints
 
 ### Get Product by Client Email
 
-#### Endpoint Details
-
-- **URL**: `/{client_email}`
-- **HTTP Method**: `GET`
-- **Response Model**: `dict`
-- **Parameters**: 
-  - `client_email`: The email of the client.
-
-#### Code Explanation
-
-- **`service.find_products_by_client_email`**: This function fetches the products associated with the given client email from the database.
+- **Endpoint:** `/products/{client_email}`
+- **Method:** GET
+- **Description:** Retrieves product information based on a client's email.
+- **Permissions:** All user roles.
+- **Response:** JSON data containing product information.
 
 ### Generate QR Codes
 
-#### Endpoint Details
-
-- **URL**: `/generate/qr`
-- **HTTP Method**: `GET`
-- **Response Model**: `list`
-- **Parameters**: 
-  - `count`: The number of QR codes to generate.
-
-#### Code Explanation
-
-- **`generate_qr_code`**: This function generates the specified number of QR codes.
+- **Endpoint:** `/products/generate/qr`
+- **Method:** GET
+- **Description:** Generates QR codes.
+- **Permissions:** All user roles.
+- **Response:** A list of generated QR codes.
 
 ### Get All Products
 
-#### Endpoint Details
-
-- **URL**: `/`
-- **HTTP Method**: `GET`
-- **Response Model**: `Page[dict]`
-- **Parameters**: None
-- **Dependencies**: `get_current_user`
-- **Exceptions**: `UnauthorizedException`, `PermissionException`
-
-#### Code Explanation
-
-- **`service.return_all_products`**: This function fetches all the products based on the user role and permissions.
+- **Endpoint:** `/products/`
+- **Method:** GET
+- **Description:** Retrieves a paginated list of all products based on user role and permissions.
+- **Permissions:** Authenticated users with appropriate roles.
+- **Response:** A paginated list of product data.
 
 ### Get Products by Order ID
 
-#### Endpoint Details
-
-- **URL**: `/get_products_by/{order_id}`
-- **HTTP Method**: `GET`
-- **Response Model**: `dict`
-- **Parameters**: 
-  - `order_id`: The ID of the order.
-- **Dependencies**: `get_current_user`
-
-#### Code Explanation
-
-- **`get_order_by_id`**: This function fetches the order data by its ID.
-  
-- **`service.return_all_products`**: This function fetches all the products associated with the given order ID.
+- **Endpoint:** `/products/get_products_by/{order_id}`
+- **Method:** GET
+- **Description:** Retrieves products for a specific order by order ID.
+- **Permissions:** Authorized roles, including admin, controller, warehouseman, manager, and loader.
+- **Response:** Detailed information about products for the specified order, including any missing goods.
 
 ### Get Product by Product ID
 
-#### Endpoint Details
-
-- **URL**: `/{product_id}`
-- **HTTP Method**: `GET`
-- **Response Model**: `dict`
-- **Parameters**: 
-  - `product_id`: The ID of the product.
-- **Dependencies**: `get_current_user`
-- **Exceptions**: `DoesNotExist`
-
-#### Code Explanation
-
-- **`service.get_product_by_id_`**: This function fetches the product data by its ID.
+- **Endpoint:** `/products/{product_id}`
+- **Method:** GET
+- **Description:** Retrieves detailed information about a product by its unique ID.
+- **Permissions:** Authenticated users with appropriate roles.
+- **Response:** JSON data containing detailed product information.
 
 ### Relocate Product
 
-#### Endpoint Details
-
-- **URL**: `/{product_id}/relocate`
-- **HTTP Method**: `PUT`
-- **Response Model**: `Success`
-- **Parameters**: 
-  - `product_id`: The ID of the product.
-  - `location`: The new location for the product.
-- **Dependencies**: `get_current_user`
-- **Exceptions**: `UnauthorizedException`, `PermissionException`, `DoesNotExist`, `InvalidIdException`
-
-#### Code Explanation
-
-- **`service.update_product`**: This function updates the location of the product in the database.
+- **Endpoint:** `/products/{product_id}/relocate`
+- **Method:** PUT
+- **Description:** Relocates a product to a new storage location.
+- **Permissions:** Warehouseman and loader roles.
+- **Response:** A success message.
 
 ### Get Product by Product Name
 
-#### Endpoint Details
+- **Endpoint:** `/products/product_by/{product_name}`
+- **Method:** GET
+- **Description:** Retrieves the total quantity of a product by its name.
+- **Permissions:** All user roles.
+- **Response:** JSON data containing the total quantity of the specified product.
 
-- **URL**: `/product_by/{product_name}`
-- **HTTP Method**: `GET`
-- **Response Model**: `dict`
-- **Parameters**: 
-  - `product_name`: The name of the product.
-- **Dependencies**: `get_current_user`
+## Dependencies
 
-#### Code Explanation
+This API relies on several dependencies for user authentication, exception handling, and pagination. These dependencies are managed internally.
 
-- **`service.get_total_quantity_product_by_name`**: This function fetches the total quantity of a product by its name.
+## Exception Handling
+
+The API handles exceptions related to unauthorized access, permission issues, non-existent data, and invalid IDs. It provides appropriate error responses for each case.
 
 ## Pagination
 
-The API uses FastAPI Pagination for paginating lists of items. The `add_pagination` function is added to the router to enable this feature.
+The API supports pagination for listing products. It uses the `fastapi-pagination` library to provide paginated responses.
+
+## How to Use
+
+You can use this API to manage products within your application based on user roles and permissions. Make HTTP requests to the specified endpoints to interact with product data.
+
+Please refer to the code for more detailed information on request and response formats.
 

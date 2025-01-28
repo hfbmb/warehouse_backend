@@ -13,8 +13,8 @@ from .config import RACK_SIZE, FLOOR_LEVELS, SHELF_SIZE
 # MongoDB connection
 username = urllib.parse.quote_plus('root')
 password = urllib.parse.quote_plus('Prometeo_2023')
-# MONGO_DB = f'mongodb://10.138.0.14:27017,10.138.0.13:27017/replicaSet=mongoset'
-MONGO_DB = f'mongodb://{username}:{password}@mongodb_container:27017'
+MONGO_DB = f'mongodb://10.138.0.14:27017,10.138.0.13:27017/replicaSet=mongoset'
+# MONGO_DB = f'mongodb://{username}:{password}@mongodb_container:27017'
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DB)
 db = client['warehouse_db']
 
@@ -271,11 +271,9 @@ async def setup_db():
     {"permission_name":"delete_permission"},
     ###Order permissions
     {"permission_name": "view_order_team"},
-    {"permission_name":"delete_main_order"},
     # {"permission_name": "start_work_on_order"},
     {"permission_name": "view_all_orders"},
     # {"permission_name": "view_order_details"},
-    {"permission_name":"create_sub_order"},
     {"permission_name": "generate_sales_url"},
     {"permission_name": "generate_order_update_url"},
     {"permission_name": "view_unchecked_products"},

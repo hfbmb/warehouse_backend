@@ -28,16 +28,17 @@ async def create_box(data : Boxes,
     }
     await user_has_permission(query,"create_box")
     # check_role_access(current_user.role,[Roles.manager,Roles.admin,Roles.director])
-    warehouse_data = await current_user_warehouse({"company_name":current_user.company,
-                                                   "warehouse_name":current_user.warehouse})
+    # warehouse_data = await current_user_warehouse({"company_name":current_user.company,
+    #                                                "warehouse_name":current_user.warehouse})
     type_data = await get_box_type_data_by_id(id=data.box_type_id)
     data = data.dict()
+    # data["company_name"]=
     data["length"]= type_data["type_length"]
     data["height"]= type_data["type_height"]
     data["width"]= type_data["type_width"]
     data["area"]=type_data["area"]
     data["volume"]=type_data["volume"]
-    data["warehouse_id"]=warehouse_data["id"]
+    # data["warehouse_id"]=warehouse_data["id"]
     await create_box_for_cell(data=data)
     return {"success":"successfully created box"}
 
@@ -54,18 +55,20 @@ async def get_box_by_id(box_id:str,
     box_data = await get_box_data_by_id(id=box_id)
     return box_data
 
-@box_router.get("/",response_model=Page[dict])
-async def get_all_box(current_user:DBUser = Depends(get_current_user)):
+@box_router.get("/{type_id}/boxes",response_model=Page[dict])
+async def get_all_box_by_type_id(
+    type_id:str,
+    current_user:DBUser = Depends(get_current_user)):
     # check_role_access(current_user.role,[Roles.admin,Roles.manager,Roles.director])
     query ={
         "role_name":current_user.role,
         "company_name":current_user.company
     }
     await user_has_permission(query,"get_all_box")
-    warehouse_data = await current_user_warehouse({"company_name":current_user.company,
-                                                   "warehouse_name":current_user.warehouse})
+    # warehouse_data = await current_user_warehouse({"company_name":current_user.company,
+    #                                                "warehouse_name":current_user.warehouse})
     boxes = await get_all_boxes_data(
-        {"warehouse_id":warehouse_data["id"]})
+        {"box_type_id":type_id})
     return paginate(boxes)
 
 @box_router.put("/{box_id}",response_model=dict)
@@ -84,8 +87,7 @@ async def update_box(box_id:str,data:BoxesUpdate,
     for key,val in data.items():
         if val !=None and val !="string" and val !=0:
             box_d[key]=val
-    await update_box_data(query={"_id":ObjectId(box_id),
-                                 "warehouse_id":warehouse_data["id"]},data=box_d)
+    await update_box_data(query={"_id":ObjectId(box_id)},data=box_d)
     return {"success":"succesfully updated box data"}
 
 @box_router.delete("/{box_id}",response_model=dict)
@@ -100,3 +102,5 @@ async def delete_box(box_id:str,
     #                   [Roles.admin,Roles.manager,Roles.director])
     await delete_box_by_id(id=box_id)
     return {"success":"successfully deleted box by id"}
+
+add_pagination(box_router)

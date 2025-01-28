@@ -1,15 +1,23 @@
-# Import FastAPI dependencies
-from fastapi import APIRouter, File, Depends, UploadFile, Path
+# Installed packages
+from fastapi import APIRouter, File, Depends, UploadFile
+from fastapi.params import Path
+# from typing import Union, Optional,List
 from fastapi_pagination import Page, paginate, add_pagination
-from bson.objectid import ObjectId
+from bson import ObjectId
 from datetime import datetime
+# import json
 
-# Import local packages and services
-from ..warehouse.service import get_product_warehouse_category, boxes_with_product
+# Local packages
+# from ..websocket.manager import ConnectionManager
+from ..warehouse.service import get_product_warehouse_category,boxes_with_product
+# from ..redis import redis_set, redis_verify, delete
 from ..dependencies import (
     get_exception_responses,
     get_current_user,
+    # check_role_access,
+    # check_admin_n_manager_access_without_exc,
     generate_unique_url,
+    # check_order_creation_token,
     upload_files,
     user_has_permission
 )
@@ -24,48 +32,57 @@ from ..exceptions import (
     RequestEntityTooLargeException,
     UnsupportedMediaTypeException,
 )
+# from ..service import check_company_warehouse
+from ..user.utils import hash_password
+# from ..responses import Success
 from ..user.models import DBUser
-from ..company.service import check_order_company_and_or_warehouse
+# from ..product.models import ManagerSideProduct
+from ..company.service import (
+    check_order_company_and_or_warehouse,
+    # get_company
+)
 from ..company.constants import Company
+from ..websocket.router import manager
 from . import service
+# from .email_sender import send_email_to_client
 from .constants import Orders, Messages
-from .models import SalesmanSideOrder, SalesmanProductTobox, SubOrders
+from .models import SalesmanSideOrder,SalesmanProductTobox
 from ..config import URL_PARTS, DOCUMENTS_DIRECTORY, MAX_DOCUMENT_UPLOAD_SIZE
 from urllib.parse import quote
 
-# Initialize API router with prefix and tags
-salesman_router = APIRouter(prefix="/salesman", tags=["salesman"])
+salesman_router = APIRouter(prefix="/salesman",tags=["salesman"])
 
-# Endpoint to generate a unique URL for a salesperson
+# Handler to generate a URL for a salesperson.
 @salesman_router.get(
     "/generate_url/",
     response_model=dict,
     responses=get_exception_responses(UnauthorizedException, PermissionException),
 )
 async def generate_url(current_user: DBUser = Depends(get_current_user)):
-    # Check for user permissions
-    query = {
-        "role_name": current_user.role,
-        "company_name": current_user.company
+    # Check user's role for access control.
+    query ={
+        "role_name":current_user.role,
+        "company_name":current_user.company
     }
-    await user_has_permission(query=query, required_permission="generate_sales_url")
-    # Generate a unique URL token
+    await user_has_permission(query=query,required_permission="generate_sales_url")
+    # check_role_access(current_user.role, [Roles.salesman])
+    # Generate a unique token for the URL.
     token = await generate_unique_url()
     encoded_token = quote(token)
     encoded_company = quote(current_user.company)
-    # Construct the URL
+    # Construct the URL with the token and company information.
     url = (
         f"{URL_PARTS['HTTP']}://{URL_PARTS['DOMAIN_NAME']}/{URL_PARTS['ENDPOINT']}?"
         f"{URL_PARTS['COMPANY']}={encoded_company}&{URL_PARTS['TOKEN']}={encoded_token}"
     )
     created_at = datetime.now()
-    # Store the token
+    # redis_data = {"token_data": token, "salesman_id": current_user.id}
+    # set_data = "token"
+    # await redis_set(set_data, redis_data)
     await service.create_token(token, current_user.id, created_at)
     return {"url_link": url, "createdAt": created_at}
 
-# ... (other endpoints with comments)
-
-# Endpoint to generate a URL for updating an existing order
+# Handler to generate a URL for updating an existing order.
 @salesman_router.get(
     "/{order_id}/generate_url_update",
     response_model=dict,
@@ -74,71 +91,36 @@ async def generate_url(current_user: DBUser = Depends(get_current_user)):
 async def generate_url_update(
     order_id: str, current_user: DBUser = Depends(get_current_user)
 ):
-    # Check for user permissions
-    query = {
-        "role_name": current_user.role,
-        "company_name": current_user.company
+    # Check user's role for access control.
+    query ={
+        "role_name":current_user.role,
+        "company_name":current_user.company
     }
-    await user_has_permission(query=query, required_permission="generate_order_update_url")
-    # Retrieve the existing order by its ID
+    await user_has_permission(query=query,required_permission="generate_order_update_url")
+    # check_role_access(current_user.role, [Roles.salesman])
+    # Retrieve the order.
     order = await service.get_order_by_id(order_id)
-    # Generate a unique URL token
+    # Validate that the salesman has permission for the order.
+    await service.validate_salesman(order[Orders.salesman_id], current_user.id)
+    # Generate a unique token for the URL.
     token = await generate_unique_url()
     encoded_token = quote(token)
     encoded_id = quote(order_id)
-    # Construct the URL for updating the order
+    # Construct the URL with the token and order ID.
     url = (
         f"{URL_PARTS['HTTP']}://{URL_PARTS['DOMAIN_NAME']}/{URL_PARTS['ENDPOINT']}?"
         f"{URL_PARTS['ORDER_ID']}={encoded_id}&{URL_PARTS['TOKEN']}={encoded_token}"
     )
     created_at = datetime.now()
-    # Store the token
+    redis_data = {"token_data": token, "salesman_id": current_user.id}
+    # await redis_set(encoded_token, redis_data)
     await service.create_token(token, current_user.id, created_at)
+
     return {"url_link": url, "createdAt": created_at}
 
-# Endpoint to get all sub-orders by a main order ID
-@salesman_router.get("/{order_id}", response_model=Page[dict])
-async def get_all_sub_order_by_order_id(
-    order_id: str, current_user: DBUser = Depends(get_current_user)
-):
-    # Check for user permissions
-    query = {
-        "role_name": current_user.role,
-        "company_name": current_user.company
-    }
-    await user_has_permission(query=query, required_permission="view_all_orders")
-    query=None
-    # Query to find sub-orders related to the main order
-    query = {
-        "main_order_id": order_id
-    }
-    sub_orders = await service.get_all_sub_orders(query=query)
-    return sub_orders
 
-# ... (other endpoints with comments)
-# Endpoint to create a sub-order
-@salesman_router.post("/", response_model=dict)
-async def create_sub_order(orders: SubOrders, current_user: DBUser = Depends(get_current_user)):
-    # Check for user permissions
-    query = {
-        "role_name": current_user.role,
-        "company_name": current_user.company
-    }
-    await user_has_permission(query=query, required_permission="create_sub_order")
-    # Retrieve the main order by its ID
-    _ = await service.get_order_by_id(order_id=orders.order_id)
-    # Initialize an empty list to store sub-order IDs
-    orders_id = []
-    # Loop through the sub-orders and create them
-    for order in orders.sub_orders:
-        order["main_order_id"] = orders.order_id
-        order_id = await service.register_order(order=order)
-        orders_id.append(order_id)
-    # Update the main order to include the sub-order IDs
-    await service.update_order(order_id=orders.order_id, data={"sub_orders": orders_id, "status": "divided_order"})
-    return {"success": f"Successfully divided main order by {orders['order_id']}"}
 
-# Endpoint to record sales-related information for an order
+# Handler to record sales-related information for an order.
 @salesman_router.put(
     "/{order_id}/record",
     response_model=dict,
@@ -155,17 +137,18 @@ async def create_sub_order(orders: SubOrders, current_user: DBUser = Depends(get
     ),
 )
 async def salesman_register(
+    # document_pdf: Optional[List[UploadFile]]=File(None),
     salesman_order: SalesmanSideOrder = Depends(SalesmanSideOrder),
     current_user: DBUser = Depends(get_current_user),
     order_id: str = Path(...),
     file: UploadFile = File(None),
-):
-    # Check for user permissions
-    query = {
-        "role_name": current_user.role,
-        "company_name": current_user.company
+):  
+    # Check user's role for access control.
+    query ={
+        "role_name":current_user.role,
+        "company_name":current_user.company
     }
-    await user_has_permission(query=query, required_permission="record_sales_info")
+    await user_has_permission(query=query,required_permission="record_sales_info")
     query=None
     # check_role_access(current_user.role, [Roles.salesman])
     # Check coherence and status of the order.
@@ -202,8 +185,6 @@ async def salesman_register(
     await service.update_order_invoice(order_id, salesman_order)
     return {Messages.message: Messages.or_rrd_scs}
 
-
-# # Endpoint to allocate products to boxes
 @salesman_router.put("/{order_id}/product/allocation",response_model=dict)
 async def product_allocate(order_id:str,
                            data:SalesmanProductTobox,
@@ -216,16 +197,12 @@ async def product_allocate(order_id:str,
     await user_has_permission(query=query,required_permission="record_sales_info")
     query=None
     order_data = await service.get_order_by_id(order_id=order_id)
-    # Initialize an empty list to store boxes
-    order_data["boxes"] = []
-    # Allocate products to boxes
-    data = data.dict()
+    order_data["boxes"]=[]
+    data=data.dict()
     await boxes_with_product(data=data)
     order_data["boxes"].append(data)
-    # Remove unnecessary keys from the order data
     order_data.pop("products")
     order_data.pop("id")
-    # Update the order with the new box allocation
-    await service.update_order_invoice(order_id=order_id, data=order_data)
-    return {"success": "Successfully allocated product in box"}
+    await service.update_order_invoice(order_id=order_id,data=order_data)
 
+    return {"success":"successfully allocate product in box"}

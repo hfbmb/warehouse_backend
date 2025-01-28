@@ -66,8 +66,8 @@ class ClientSideProduct(BaseModel):
                 "width": 1,
                 "length": 1,
                 "packing_type": "pallets",
-                "dimension_type": "cm",
-                "weight_type": "kg",
+                "dimension_type": "container",
+                "weight_type": "container",
                 "expiration_date": 1.1,
             }
         }
