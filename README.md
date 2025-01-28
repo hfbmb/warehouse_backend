@@ -1,4 +1,4 @@
-## WAREHOUSE
+# WAREHOUSE
 This project is a modern warehouse system developed using the Python language and the FastAPI framework. It is designed to automate and optimize warehouse management processes, starting from the arrival of goods at the warehouse and ending with the shipment of goods.
 
 Project description:
