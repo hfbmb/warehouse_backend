@@ -13,20 +13,21 @@ The following key functions were developed as part of the project:
 
 #### Routers
 ** JSON data exchange format **
+
 Swagger documentation is available at http://localhost:7777/docs/
 
 1. /company/
-  - This router is for a company. it will register, update and delete company.
+    - This router is for a company. it will register, update and delete company.
 2. /warehouse/
-  - This router is for a warehouse. it will register, update and delete warehouse.
+    - This router is for a warehouse. it will register, update and delete warehouse.
 3. /user/
-  - This router is for a user. it will register, update and delete user.
+    - This router is for a user. it will register, update and delete user.
 4. /order/
-  - This router is for a order. it will register, update and delete order
+    - This router is for a order. it will register, update and delete order
 5. /product/
-  - This router is for a product. it will register, update and delete product
+    - This router is for a product. it will register, update and delete product
 6. /report/
-  - This router allows warehouse operators to quickly and accurately record the receipt of goods, including information about the quantity, condition and location of goods in the warehouse. it will register, update and delete report
+    - This router allows warehouse operators to quickly and accurately record the receipt of goods, including information about the quantity, condition and location of goods in the warehouse. it will register, update and delete report
 
 ![Scheme with Blockchain](warehouse.png)
 
@@ -38,15 +39,20 @@ Swagger documentation is available at http://localhost:7777/docs/
   
 ### Installing and Running the Application
 1. Clone the project repository to your computer:
+   
 ``` git clone git@github.com:Prometeochainsystem/warehouse_backend.git ```
-2. Go to the project directory:
+3. Go to the project directory:
+
 ``` cd ./warehouse_backend ```
-3. Run the application with Docker Compose:
+4. Run the application with Docker Compose:
+
 ``` docker-compose up --build ```
-4. To stop the application, run the command:
+5. To stop the application, run the command:
+
 ``` docker-compose down ```
 
 ### Testing
 
 Running unit tests
+
 ``` pytest ./tests ```
