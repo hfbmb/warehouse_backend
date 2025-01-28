@@ -12,7 +12,7 @@ The following key functions were developed as part of the project:
   - The system allows you to manage the process of shipment of goods, including the formation of orders, preparation of goods for shipment and monitoring of the delivery process.
 
 #### Routers
-** JSON data exchange format **
+**JSON data exchange format**
 
 Swagger documentation is available at http://localhost:7777/docs/
 
@@ -40,22 +40,32 @@ Swagger documentation is available at http://localhost:7777/docs/
 ### Installing and Running the Application
 1. Clone the project repository to your computer:
    
-``` git clone git@github.com:Prometeochainsystem/warehouse_backend.git ```
+``` 
+git clone git@github.com:Prometeochainsystem/warehouse_backend.git
+```
 
 3. Go to the project directory:
 
-``` cd ./warehouse_backend ```
+``` 
+cd ./warehouse_backend
+```
 
 4. Run the application with Docker Compose:
 
-``` docker-compose up --build ```
+``` 
+docker-compose up --build
+```
 
 5. To stop the application, run the command:
 
-``` docker-compose down ```
+``` 
+docker-compose down
+```
 
 ### Testing
 
 Running unit tests
 
-``` pytest ./tests ```
+``` 
+pytest ./tests
+```
