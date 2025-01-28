@@ -41,12 +41,15 @@ Swagger documentation is available at http://localhost:7777/docs/
 1. Clone the project repository to your computer:
    
 ``` git clone git@github.com:Prometeochainsystem/warehouse_backend.git ```
+
 3. Go to the project directory:
 
 ``` cd ./warehouse_backend ```
+
 4. Run the application with Docker Compose:
 
 ``` docker-compose up --build ```
+
 5. To stop the application, run the command:
 
 ``` docker-compose down ```
