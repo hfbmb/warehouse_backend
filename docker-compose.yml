@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  fast_api:
+    build: .
+    ports:
+      - 7777:7777
+    depends_on:
+      - mongodb_container
+      - app_redis
+    volumes:
+      - ./tests:/fast_api/tests  # Изменено с ./tests:/ на ./tests:/fast_api/tests
+      - ./fast_api:/fast_api/app
+      - data:/fast_api/data
+  mongodb_container:
+    image: mongo:4.4
+    ports:
+      - "27016:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: Prometeo_2023
+    volumes:
+      - data:/data/db
+    restart: always
+  
+  app_redis:
+    image: redis:6.2-alpine
+    container_name: app_redis
+    command:
+      - 'redis-server'
+      - '--requirepass Qr_@20'
+    ports:
+      - 6379:6379
+    # volumes:
+    #   - data:/redis/db
+
+volumes:
+  data:
+    name: data

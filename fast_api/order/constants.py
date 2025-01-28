@@ -1,0 +1,46 @@
+class Orders:
+    id = "_id"
+    recipient = "recipient"
+    company_name = "sender"
+    products = "products"
+    document_pdf = "document_pdf"
+    warehouse = "warehouse_name"
+    status = "status"
+
+    bin_tax_code = "bin_tax_code"
+    first_name = "first_name"
+    second_name = "second_name"
+    e_mail = "e_mail"
+    telephone_number = "telephone_number"
+    date = "date"
+    time = "time"
+
+    initial_schedule = "initial_schedule"
+    end_schedule = "end_schedule"
+    place = "place"
+    initial_time = "initial_time"
+    end_time = "end_time"
+
+    warehouse_team = "warehouse_team"
+    responsible_workers = "responsible_workers"
+
+    salesman_id = "salesman_id"
+    deletionDate = "deletionDate"
+
+
+class Messages:
+    message = "message"
+    or_reg_scs = "Order was registered successfully"
+    or_inv_reg_scs = "Order invoice was registered successfully"
+    or_compl_scs = "Order was completed successfully"
+    st_or_added = "Order added"
+    status_invoiced = "Order_invoiced"
+    or_approv_scs = "Order was approved successfully"
+    status_approve = "Order approved"
+    status_failed = "Order failed"
+    status_salesman_recorded = "Order was recorded"
+    or_up_scs = "Order was updated successfully"
+    or_rrd_scs = "Order was recorded successfully"
+    status_started = "started"
+    order_not_found_by_id = "order not found by id"
+    poduct_by_name = "not found product in this order"
